@@ -1,4 +1,7 @@
 <?php
+use App\Http\Controllers\Controller;
+
+use App\Http\Controllers\ApiFormController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -18,3 +21,4 @@ use Illuminate\Support\Facades\Route;
 }); 
 
 
+Route::get('/send_form', [ApiFormController::class, 'send_form']);

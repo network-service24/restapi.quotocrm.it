@@ -1,6 +1,10 @@
 <?php
 use App\Http\Controllers\Controller;
+
 use App\Http\Controllers\ApiController;
+
+use App\Http\Controllers\ApiFormController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('apikey')->group(function () {
@@ -26,7 +30,8 @@ Route::middleware('apikey')->group(function () {
     Route::post('/condizioni_generali', [ApiController::class, 'condizioni_generali']);
     Route::post('/tipo_pagamenti', [ApiController::class, 'tipo_pagamenti']);
     Route::post('/lista_preventivi', [ApiController::class, 'lista_preventivi']);
-    Route::post('/compila_preventivo', [ApiController::class, 'compila_preventivo']);
+   
+    Route::post('/insert_preventivo', [ApiFormController::class, 'insert_preventivo']);
 });
 
 
