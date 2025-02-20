@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use DateTime;
 
 class ApiController extends Controller
@@ -30,11 +31,13 @@ class ApiController extends Controller
                     AND s.data_end_hospitality > :endDate";
         $result = DB::select($select,['startDate' => date('Y-m-d'), 'endDate' => date('Y-m-d')]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API strutture() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Strutture non trovati!']);
         }
-
+        
     }
 
     /**
@@ -48,11 +51,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM prefissi ORDER BY nazione ASC";
         $result = DB::select($select);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API prefissi() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Prefissi non trovati!']);
         }
-
+      
     }
 
     /**
@@ -66,10 +71,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_lingue WHERE idsito = :idsito";
         $result = DB::select($select,['idsito' => $request->idsito]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API lingue() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Lingue non trovate!']);
         }
+        
     }
         
     /**
@@ -83,11 +91,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_operatori WHERE idsito = :idsito AND Abilitato = :Abilitato";
         $result = DB::select($select,['idsito' => $request->idsito,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API operatori() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Operatori non trovati!']);
         }
-
+       
     }
   
     /**
@@ -101,11 +111,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_target WHERE idsito = :idsito AND Abilitato = :Abilitato";
         $result = DB::select($select,['idsito' => $request->idsito,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API target() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Target non trovati!']);
         }
-
+        
     }
     
     /**
@@ -128,11 +140,13 @@ class ApiController extends Controller
                         hospitality_template_background.Visibile = 1";
         $result = DB::select($select,['idsito' => $request->idsito]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API template() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'template non trovati!']);
         }
-
+       
     }
     
     /**
@@ -146,11 +160,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_template_landing WHERE idsito = :idsito";
         $result = DB::select($select,['idsito' => $request->idsito]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API template_default() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'template impostato di default non trovati!']);
         }
-
+        
     }
     
     /**
@@ -164,11 +180,14 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_template_link_landing WHERE idsito = :idsito AND id_richiesta = :id_richiesta";
         $result = DB::select($select,['idsito' => $request->idsito,'id_richiesta' => $request->id_richiesta]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API template_link_preventivo() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Template NON impostato nel preventivo, oppure non trovato!']);
+            $message = date('d-m-Y H:i:s').' -> API template_link_preventivo() -> Esito: error; i dati richiesti non sono stati trovati, oppure la chiamata effettuata era errata!';
         }
-
+       
     }
     
     
@@ -197,11 +216,13 @@ class ApiController extends Controller
                         hospitality_tipo_pacchetto_lingua.Pacchetto ASC";
         $result = DB::select($select,['idsito' => $request->idsito,'lingua' => $request->lingua]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API proposte_pacchetti() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Proposte e Pacchetti non trovati!']);
         }
-
+        
     }
     
     /**
@@ -215,11 +236,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_tipo_soggiorno WHERE idsito = :idsito  AND Abilitato = :Abilitato ORDER BY TipoSoggiorno ASC";
         $result = DB::select($select,['idsito' => $request->idsito,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API tipo_soggiorni() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Tipo Soggiorni non trovati!']);
         }
-
+        
     }
     
     /**
@@ -233,11 +256,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_tipo_camere WHERE idsito = :idsito  AND Abilitato = :Abilitato ORDER BY TipoCamere ASC";
         $result = DB::select($select,['idsito' => $request->idsito,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API tipo_camere() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Tipo Camere non trovati!']);
         }
-
+       
     }
     
     /**
@@ -268,10 +293,13 @@ class ApiController extends Controller
                         hospitality_tipo_servizi.Ordine ASC";
         $result = DB::select($select,['idsito' => $request->idsito,'Lingua' => $request->lingua,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API servizi_aggiuntivi() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Servizi aggiuntivi non trovati!']);
-        }            
+        }  
+                  
     }
 
     
@@ -316,10 +344,13 @@ class ApiController extends Controller
                     ['value' => 100, 'sconto' => '100%'],
                 ];
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API lista_sconti() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message); 
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Lista sconti non trovati!']);
-        } 
+        }
+        
     }
     
     /**
@@ -354,10 +385,13 @@ class ApiController extends Controller
                     ['value' => 100, 'caparra' => '100%', 'default' => ($caparra_default==100?1:0)],
                 ];
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API lista_caparra() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Lista caparre non trovati!']);
-        } 
+        }
+          
     }
 
     
@@ -385,11 +419,13 @@ class ApiController extends Controller
                         hospitality_condizioni_tariffe_lingua.tariffa ASC";
         $result = DB::select($select,['idsito' => $request->idsito,'lingua' => $request->lingua]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API tipologia_tariffe() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Lista condizioni tariffarie non trovati!']);
         }
-
+         
     }
     
     /**
@@ -404,10 +440,13 @@ class ApiController extends Controller
                     ];
                     
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API fonte_provenienza() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Lista condizioni tariffarie non trovati!']);
         }
+    
     }
     
     /**
@@ -421,11 +460,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_info_box WHERE idsito = :idsito AND Abilitato = :Abilitato";
         $result = DB::select($select,['idsito' => $request->idsito,'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API lista_info_box() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Lista Info Box non trovati!']);
         }
-
+         
     }    
     /**
      * info_box_by_template
@@ -452,11 +493,13 @@ class ApiController extends Controller
                         hospitality_info_box.Abilitato = :Abilitato";
         $result = DB::select($select,['idsito' => $request->idsito,'idsito1' => $request->idsito,'id_template' => $request->id_template, 'Abilitato' => 1]);
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API info_box_by_template() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Info Box per template non trovati!']);
         }
-
+        
     }
     
     /**
@@ -484,11 +527,13 @@ class ApiController extends Controller
                         hospitality_info_box.Abilitato = :Abilitato";
         $result = DB::select($select,['idsito' => $request->idsito,'idsito1' => $request->idsito,'id_richiesta' => $request->id_richiesta, 'Abilitato' => 1]);
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API info_box_by_preventivo() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Info Box per preventivo non trovati!']);
         }
-
+        
     }
     
     /**
@@ -502,11 +547,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_politiche WHERE idsito = :idsito AND tipo = :tipo ORDER BY Id ASC";
         $result = DB::select($select,['idsito' => $request->idsito, 'tipo' => 0]);
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API condizioni_generali() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Condizioni generali non trovati!']);
         }
-
+        
     }
     
     /**
@@ -520,11 +567,13 @@ class ApiController extends Controller
         $select = "SELECT * FROM hospitality_tipo_pagamenti WHERE idsito = :idsito AND Abilitato = :Abilitato ORDER BY Ordine ASC";
         $result = DB::select($select,['idsito' => $request->idsito, 'Abilitato' => 1]);
         if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API tipo_pagamenti() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
             return response()->json($result);
         }else{
             return response()->json(['error' => 'Tipologia pagamenti non trovati!']);
         }
-
+         
     }
 
     public function lista_preventivi(Request $request)
@@ -553,11 +602,13 @@ class ApiController extends Controller
                                     ]
                                 );
         if(sizeof($result)>0){
-            return response()->json($result);
+            $message = date('d-m-Y H:i:s').' -> API lista_preventivi() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result); 
         }else{
             return response()->json(['error' => 'Lista preventivi non trovati!']);
         }
-
+        
     }
 
 
@@ -590,7 +641,18 @@ class ApiController extends Controller
                 DB::select($in_template);
             }
 
+            $sel          = "SELECT * FROM hospitality_guest WHERE Id = :Id AND idsito = :idsito";
+            $res          = DB::select($sel,['Id' => $request->Id,'idsito' => $request->idsito]);
+            $record       = $res[0];
+            $DataArrivo   = $record->DataArrivo;
+            $DataPartenza = $record->DataPartenza;
+            $Lingua       = $record->Lingua;
 
+            if($request->Lingua!= ''){
+                $Lingua = $request->Lingua;
+            }else{
+                $Lingua = $Lingua;
+            }
             // query di modifica
             $update = "UPDATE hospitality_guest SET 
                                                 ChiPrenota             = '".addslashes($request->ChiPrenota)."',
@@ -599,7 +661,7 @@ class ApiController extends Controller
                                                 idsito                 = '".$request->idsito."',
                                                 id_politiche           = '".$request->id_politiche."',
                                                 id_template            = '".$request->id_template."',
-                                                Lingua                 = '".$request->Lingua."',
+                                                Lingua                 = '".$Lingua."',
                                                 DataScadenza           = '".$request->DataScadenza."',
                                                 AbilitaInvio           = 1,
                                                 InvioAutomatico        = 1
@@ -608,34 +670,42 @@ class ApiController extends Controller
                 
                  if($request->PrezzoP1!=''){
 
-                    $DataArrivo1         = $request->DataArrivo1;
-                    $DataPartenza1       = $request->DataPartenza1;
+                    if($request->DataArrivo1 != ''){
+                        $DataArrivo1 = $request->DataArrivo1;
+                    }else{
+                        $DataArrivo1 = $DataArrivo;
+                    }
+                    if($request->DataPartenza1 != ''){
+                        $DataPartenza1 = $request->DataPartenza1;
+                    }else{
+                        $DataPartenza1 = $DataPartenza;
+                    }
 
-                            $insertP1 = "INSERT INTO hospitality_proposte(id_richiesta,
-                                                                Arrivo,
-                                                                Partenza,
-                                                                NomeProposta,
-                                                                TestoProposta,
-                                                                CheckProposta,
-                                                                PrezzoL,
-                                                                PrezzoP,
-                                                                AccontoPercentuale,
-                                                                AccontoImporto,
-                                                                AccontoTariffa,
-                                                                AccontoTesto
-                                                                ) VALUES (
-                                                                '".$request->Id."',
-                                                                '".$DataArrivo1."',
-                                                                '".$DataPartenza1."',
-                                                                '".addslashes($request->NomeProposta1)."',
-                                                                '".addslashes($request->TestoProposta1)."',
-                                                                '0',
-                                                                '0',
-                                                                '".$request->PrezzoP1."',
-                                                                '".$request->AccontoPercentuale1."',
-                                                                '".$request->AccontoImporto1."',
-                                                                '".addslashes($request->EtichettaTariffa1)."',
-                                                                '".addslashes($request->AccontoTesto1)."')";
+                    $insertP1 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                        Arrivo,
+                                                        Partenza,
+                                                        NomeProposta,
+                                                        TestoProposta,
+                                                        CheckProposta,
+                                                        PrezzoL,
+                                                        PrezzoP,
+                                                        AccontoPercentuale,
+                                                        AccontoImporto,
+                                                        AccontoTariffa,
+                                                        AccontoTesto
+                                                        ) VALUES (
+                                                        '".$request->Id."',
+                                                        '".$DataArrivo1."',
+                                                        '".$DataPartenza1."',
+                                                        '".addslashes($request->NomeProposta1)."',
+                                                        '".addslashes($request->TestoProposta1)."',
+                                                        '0',
+                                                        '0',
+                                                        '".$request->PrezzoP1."',
+                                                        '".$request->AccontoPercentuale1."',
+                                                        '".$request->AccontoImporto1."',
+                                                        '".addslashes($request->EtichettaTariffa1)."',
+                                                        '".addslashes($request->AccontoTesto1)."')";
                     DB::select($insertP1);
                     $IdProposta = DB::getPdo()->lastInsertId();
 
@@ -675,9 +745,17 @@ class ApiController extends Controller
 
                 if($request->PrezzoP2!=''){
 
+                    if($request->DataArrivo2 != ''){
+                        $DataArrivo2 = $request->DataArrivo2;
+                    }else{
+                        $DataArrivo2 = $DataArrivo;
+                    }
+                    if($request->DataPartenza2 != ''){
+                        $DataPartenza2 = $request->DataPartenza2;
+                    }else{
+                        $DataPartenza2 = $DataPartenza;
+                    }
 
-                    $DataArrivo2         = $request->DataArrivo2;
-                    $DataPartenza2       = $request->DataPartenza2;
 
                     $insertP2 = "INSERT INTO hospitality_proposte(id_richiesta,
                                                                 Arrivo,
@@ -742,8 +820,16 @@ class ApiController extends Controller
 
                 if($request->PrezzoP3!=''){
 
-                    $DataArrivo3         = $request->DataArrivo3;
-                    $DataPartenza3       = $request->DataPartenza3;
+                    if($request->DataArrivo3 != ''){
+                        $DataArrivo3 = $request->DataArrivo3;
+                    }else{
+                        $DataArrivo3 = $DataArrivo;
+                    }
+                    if($request->DataPartenza3 != ''){
+                        $DataPartenza3 = $request->DataPartenza3;
+                    }else{
+                        $DataPartenza3 = $DataPartenza;
+                    }
 
                     $insertP3 = "INSERT INTO hospitality_proposte(id_richiesta,
                                                                 Arrivo,
@@ -810,9 +896,17 @@ class ApiController extends Controller
                 
                 if($request->PrezzoP4!=''){
 
+                    if($request->DataArrivo4 != ''){
+                        $DataArrivo4 = $request->DataArrivo4;
+                    }else{
+                        $DataArrivo4 = $DataArrivo;
+                    }
+                    if($request->DataPartenza4 != ''){
+                        $DataPartenza4 = $request->DataPartenza4;
+                    }else{
+                        $DataPartenza4 = $DataPartenza;
+                    }
 
-                        $DataArrivo4         = $request->DataArrivo4;
-                        $DataPartenza4       = $request->DataPartenza4;
 
                         $insertP4 = "INSERT INTO hospitality_proposte(id_richiesta,
                                                                 Arrivo,
@@ -879,8 +973,17 @@ class ApiController extends Controller
 
                 if($request->PrezzoP5!=''){
 
-                    $DataArrivo5         = $request->DataArrivo5;
-                    $DataPartenza5       = $request->DataPartenza5;
+                    if($request->DataArrivo5 != ''){
+                        $DataArrivo5 = $request->DataArrivo5;
+                    }else{
+                        $DataArrivo5 = $DataArrivo;
+                    }
+                    if($request->DataPartenza5 != ''){
+                        $DataPartenza5 = $request->DataPartenza5;
+                    }else{
+                        $DataPartenza5 = $DataPartenza;
+                    }
+
 
                     $insertP5 = "INSERT INTO hospitality_proposte(id_richiesta,
                                                                 Arrivo,
@@ -951,8 +1054,9 @@ class ApiController extends Controller
                     DB::select("INSERT INTO hospitality_rel_infobox_preventivo(idsito,id_richiesta,id_infobox) VALUES('".$request->idsito."','".$request->Id."','".$value."')");
                 }
             }
-        
 
+
+            Log::info(date('d-m-Y H:i:s').' -> API compila_preventivo() -> Esito: success; compilato il preventivo {Id} per il QUOTO di {idsito}!',['Id' => $request->Id,'idsito' => $request->idsito]);
 
     }
 
