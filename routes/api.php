@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('apikey')->group(function () {
     Route::post('/strutture', [ApiController::class, 'strutture']);
     Route::post('/lingue', [ApiController::class, 'lingue']);
+    Route::post('/configurazioniAI', [ApiController::class, 'configurazioniAI']);
     Route::post('/operatori', [ApiController::class, 'operatori']);
     Route::post('/target', [ApiController::class, 'target']);
     Route::post('/template', [ApiController::class, 'template']);
@@ -30,6 +31,7 @@ Route::middleware('apikey')->group(function () {
     Route::post('/condizioni_generali', [ApiController::class, 'condizioni_generali']);
     Route::post('/tipo_pagamenti', [ApiController::class, 'tipo_pagamenti']);
     Route::post('/lista_preventivi', [ApiController::class, 'lista_preventivi']);
+    Route::post('/compila_preventivo_libero', [ApiController::class, 'compila_preventivo_libero']);
     Route::post('/compila_preventivo', [ApiController::class, 'compila_preventivo']);
    
     Route::post('/insert_preventivo', [ApiFormController::class, 'insert_preventivo']);

@@ -11,6 +11,34 @@ use DateTime;
 
 class ApiController extends Controller
 {    
+
+
+    
+    /**
+     * configurazioneAI
+     *
+     * @param  mixed $idsito
+     * @return void
+     */
+    public function configurazioniAI(Request $request)
+    {
+
+        $select = "SELECT 
+                        * 
+                    FROM hospitality_configurazioniAI
+                    WHERE hospitality_configurazioniAI.idsito = :idsito";
+        $result = DB::select($select,['idsito' => $request->idsito]);
+        if(sizeof($result)>0){
+            $message = date('d-m-Y H:i:s').' -> API configurazioneAI() -> Esito: success; response dati richiesti andata a buon fine!';
+            Log::info($message);
+            return response()->json($result);
+        }else{
+            return response()->json(['error' => 'Configurazioni non trovate!']);
+        }
+        
+    }
+
+    
     /**
      * strutture
      *
@@ -613,8 +641,14 @@ class ApiController extends Controller
 
 
 
-
-    public function compila_preventivo(Request $request)
+    
+    /**
+     * compila_preventivo_libero
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function compila_preventivo_libero(Request $request)
     {
 
             // controllo se è gia stata riempita la tabella rel_pagamenti
@@ -1060,11 +1094,733 @@ class ApiController extends Controller
 
     }
 
+    
+    /**
+     * get_configurazioneAI
+     *
+     * @param  mixed $idsito
+     * @return void
+     */
+    public function get_configurazioniAI($idsito)
+    {
+        $select = "SELECT 
+                        * 
+                    FROM hospitality_configurazioniAI
+                    WHERE hospitality_configurazioniAI.idsito = :idsito";
+        $result = DB::select($select,['idsito' => $idsito]);
+        if(sizeof($result)>0){
+            return $result[0];
+        }else{
+            return '';
+        }      
+    }
+
+        
+    /**
+     * get_pacchettiAI
+     *
+     * @param  mixed $idsito
+     * @param  mixed $id_pacchetto
+     * @param  mixed $lingua
+     * @return void
+     */
+    public function get_pacchettiAI($idsito,$id_pacchetto,$lingua)
+    {
+        $select = "SELECT 
+                        * 
+                    FROM 
+                        hospitality_tipo_pacchetto_lingua
+                    WHERE 
+                        hospitality_tipo_pacchetto_lingua.idsito = :idsito
+                    AND 
+                        hospitality_tipo_pacchetto_lingua.pacchetto_id = :id_pacchetto
+                    AND 
+                        hospitality_tipo_pacchetto_lingua.lingue = :lingua";
+        $result = DB::select($select,['idsito' => $idsito,'id_pacchetto' => $id_pacchetto,'lingua' => $lingua]);
+        if(sizeof($result)>0){
+            return $result[0];
+        }else{
+            return '';
+        }      
+    }
+        
+    public function get_condizioniTariffeAI($idsito,$id_tariffa,$lingua)
+    {
+        $select = "SELECT 
+                        * 
+                    FROM 
+                        hospitality_condizioni_tariffe_lingua
+                    WHERE 
+                        hospitality_condizioni_tariffe_lingua.idsito = :idsito
+                    AND 
+                        hospitality_condizioni_tariffe_lingua.id_tariffe = :id_tariffa
+                    AND 
+                        hospitality_condizioni_tariffe_lingua.Lingua = :lingua";
+        $result = DB::select($select,['idsito' => $idsito,'id_tariffa' => $id_tariffa,'lingua' => $lingua]);
+        if(sizeof($result)>0){
+            return $result[0];
+        }else{
+            return '';
+        }      
+    }
+    
+    /**
+     * get_caparraAI
+     *
+     * @param  mixed $idsito
+     * @return void
+     */
+    public function get_caparraAI($idsito)
+    {
+        $select = "SELECT * FROM hospitality_acconto_pagamenti WHERE idsito = :idsito";
+        $res = DB::select($select,['idsito' => $idsito]);
+        if(sizeof($res)>0){
+            $rec = $res[0];
+            $caparra_default = $rec->Acconto;
+        }else{
+            $caparra_default = '';
+        }
+        return $caparra_default;
+    }
+
+    /**
+     * compila_preventivo
+     *
+     * @param  mixed $request
+     * @return void
+     */
+    public function compila_preventivo(Request $request)
+    {
+            $config = $this->get_configurazioniAI($request->idsito);
+            $abilita             = $config->abilita;
+            $dal                 = $config->dal;
+            $al                  = $config->al;
+            $ora_dal             = $config->ora_dal;
+            $ora_al              = $config->ora_al;
+            $ripetizione         = $config->ripetizione;
+            $operatore           = $config->operatore;
+            $email_operatore     = $config->email_operatore;
+            $target              = $config->target;
+            $id_template         = $config->id_template;
+            $id_pacchetto        = $config->id_pacchetto;
+            $servizi_aggiuntivi  = $config->servizi_aggiuntivi;
+            $ordine_prezzo       = $config->ordine_prezzo;
+            $id_tariffe          = $config->id_tariffa;
+            $id_politiche        = $config->id_politiche;
+            $tipologie_pagamento = $config->tipologie_pagamento;
+            $giorni_scadenza     = $config->giorni_scadenza;
 
 
+            /** Controllo se il modulo è abilitato per che giorno e per che ora */
+            if($abilita == 1 && date('Y-m-d H:i:s') >= $dal.' '.$ora_dal && date('Y-m-d H:i:s') <= $al.' '.$ora_al){
+
+                /** Esplodo il campo tipologia_pagamenti e controllo se nell'array ci sono i valori per assegnare le variabili */
+                $array_pagamenti = explode(",", $tipologie_pagamento);
+                if(in_array('CC',$array_pagamenti)){
+                    $CC = 1; 
+                }else{
+                    $CC = 0;
+                }
+                if(in_array('BB',$array_pagamenti)){
+                    $BB = 1; 
+                }else{
+                    $BB = 0;
+                }
+                if(in_array('VP',$array_pagamenti)){
+                    $VP = 1; 
+                }else{
+                    $VP = 0;
+                }
+                if(in_array('PP',$array_pagamenti)){
+                    $PP = 1; 
+                }else{
+                    $PP = 0;
+                }
+                if(in_array('GB',$array_pagamenti)){
+                    $GB = 1; 
+                }else{
+                    $GB = 0;
+                }
+                if(in_array('GBVP',$array_pagamenti)){
+                    $GBVP = 1; 
+                }else{
+                    $GBVP = 0;
+                }
+                if(in_array('GBS',$array_pagamenti)){
+                    $GBS = 1; 
+                }else{
+                    $GBS = 0;
+                }
+                if(in_array('GBNX',$array_pagamenti)){
+                    $GBNX = 1; 
+                }else{
+                    $GBNX = 0;
+                }
+                 /** Compilo la tabella relazionale con i tipo di  pagamento per il preventivo */
+                DB::table('hospitality_rel_pagamenti_preventivi')->insert([
+                                                                            'idsito'       => $request->idsito,
+                                                                            'id_richiesta' => $request->Id,
+                                                                            'CC'           => $CC,
+                                                                            'BB'           => $BB,
+                                                                            'VP'           => $VP,
+                                                                            'PP'           => $PP,
+                                                                            'GB'           => $GB,
+                                                                            'GBVP'         => $GBVP,
+                                                                            'GBS'          => $GBS,
+                                                                            'linkStripe'   => $request->linkStripe,
+                                                                            'GBNX'         => $GBNX
+                                                                        ]);
+                
+                 /** Compilo la tabella assegnando il template al preventivo */
+                 DB::table('hospitality_template_link_landing')->insert([                                                                                
+                                                                            'id_richiesta' => $request->Id,
+                                                                            'id_template'  => $id_template,
+                                                                            'idsito'       => $request->idsito
+                                                                        ]);
+
+                
+
+                $sel          = "SELECT * FROM hospitality_guest WHERE Id = :Id AND idsito = :idsito";
+                $res          = DB::select($sel,['Id' => $request->Id,'idsito' => $request->idsito]);
+                $record       = $res[0];
+                $DataRichiesta = $record->DataRichiesta;
+                $DataArrivo    = $record->DataArrivo;
+                $DataPartenza  = $record->DataPartenza;
+                $Lingua        = $record->Lingua;
+
+                if($request->Lingua!= ''){
+                    $Lingua = $request->Lingua;
+                }else{
+                    $Lingua = $Lingua;
+                }
+
+                $DataR        = explode("-",$DataRichiesta);
+                $n_giorni     = mktime(0,0,0,$DataR[1],($DataR[2]+$giorni_scadenza),$DataR[0]);
+                $DataScadenza = date('Y-m-d',$n_giorni);
+                // query di modifica
+                DB::table('hospitality_guest')->where('Id','=',$request->Id)->update([                                                                                
+                                                                                        'ChiPrenota'             => addslashes($operatore),
+                                                                                        'EmailSegretaria'        => $email_operatore,
+                                                                                        'TipoVacanza'            => $target,
+                                                                                        'idsito'                 => $request->idsito,
+                                                                                        'id_politiche'           => $id_politiche,
+                                                                                        'id_template'            => $id_template,
+                                                                                        'Lingua'                 => $Lingua,
+                                                                                        'DataScadenza'           => $DataScadenza,
+                                                                                        'AbilitaInvio'           => 1,
+                                                                                        'InvioAutomatico'        => 1
+                                                                                    ]);
+
+                    
+                    if($request->PrezzoP1!=''){
+
+                        if($request->DataArrivo1 != ''){
+                            $DataArrivo1 = $request->DataArrivo1;
+                        }else{
+                            $DataArrivo1 = $DataArrivo;
+                        }
+                        if($request->DataPartenza1 != ''){
+                            $DataPartenza1 = $request->DataPartenza1;
+                        }else{
+                            $DataPartenza1 = $DataPartenza;
+                        }
+                        /** chiamata funzione per popolare pacchetti e porposte per lingua */
+                        $pacchetti = $this->get_pacchettiAI($request->idsito,$id_pacchetto,$Lingua);
+                        if($pacchetti != ''){
+                            $NomeProposta1  = $pacchetti->Pacchetto;
+                            $TestoProposta1 = $pacchetti->Descrizione;
+                        }else{
+                            $NomeProposta1  = '';
+                            $TestoProposta1 = '';
+                        }
+                        /** Chimamata funzione per popolare le condizione tariffarie per lingua */
+                        $tariffe = $this->get_condizioniTariffeAI($request->idsito,$id_tariffe,$Lingua);
+                        if($tariffe != ''){
+                            $EtichettaTariffa1 = $tariffe->tariffa;
+                            $AccontoTesto1     = $tariffe->testo;
+                        }else{
+                            $EtichettaTariffa1 = '';
+                            $AccontoTesto1     = '';
+                        }            
+                        /** chimata per compilare la percentuale di caparra richiesta */
+                        $caparra = $this->get_caparraAI($request->idsito);
+
+                        $insertP1 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                            Arrivo,
+                                                            Partenza,
+                                                            NomeProposta,
+                                                            TestoProposta,
+                                                            CheckProposta,
+                                                            PrezzoL,
+                                                            PrezzoP,
+                                                            AccontoPercentuale,
+                                                            AccontoImporto,
+                                                            AccontoTariffa,
+                                                            AccontoTesto
+                                                            ) VALUES (
+                                                            '".$request->Id."',
+                                                            '".$DataArrivo1."',
+                                                            '".$DataPartenza1."',
+                                                            '".addslashes($NomeProposta1)."',
+                                                            '".addslashes($TestoProposta1)."',
+                                                            '0',
+                                                            '0',
+                                                            '".$request->PrezzoP1."',
+                                                            '".$caparra."',
+                                                            '0',
+                                                            '".addslashes($EtichettaTariffa1)."',
+                                                            '".addslashes($AccontoTesto1)."')";
+                        DB::select($insertP1);
+                        $IdProposta = DB::getPdo()->lastInsertId();
+
+                            $n_camere = count($request->TipoCamere1);
+                            for($i=0; $i<=($n_camere-1); $i++){
+                                DB::select("INSERT INTO hospitality_richiesta(id_richiesta,
+                                                                    id_proposta,
+                                                                    TipoSoggiorno,
+                                                                    NumeroCamere,
+                                                                    TipoCamere,
+                                                                    NumAdulti,
+                                                                    NumBambini,
+                                                                    EtaB,
+                                                                    Prezzo
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$IdProposta."',
+                                                                    '".$request->TipoSoggiorno1[$i]."',
+                                                                    '1',
+                                                                    '".$request->TipoCamere1[$i]."',
+                                                                    '".$request->NumAdulti1[$i]."',
+                                                                    '".$request->NumBambini1[$i]."',
+                                                                    '".$request->EtaB1[$i]."',
+                                                                    '".$request->Prezzo1[$i]."')");
+                            } 
+
+                        $array_servizi = explode(",", $servizi_aggiuntivi);
+
+                        if($array_servizi != '' && $IdProposta != '') {   
+                            foreach($array_servizi as $key => $value){
+                                DB::select("INSERT INTO hospitality_relazione_visibili_servizi_proposte(idsito,id_richiesta,id_proposta,servizio_id,visibile) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta."','".$value."','1')");
+                            }
+                        }
+                        ## INSERIMENTO DELLO SCONTO IN TABELLA RELAZIONALE  
+                        DB::select("INSERT INTO hospitality_relazione_sconto_proposte(idsito,id_richiesta,id_proposta,sconto) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta."','".$request->SC1."')");    
+
+                    } 
 
 
+                    if($request->PrezzoP2!=''){
 
+                        if($request->DataArrivo2 != ''){
+                            $DataArrivo2 = $request->DataArrivo2;
+                        }else{
+                            $DataArrivo2 = $DataArrivo;
+                        }
+                        if($request->DataPartenza2 != ''){
+                            $DataPartenza2 = $request->DataPartenza2;
+                        }else{
+                            $DataPartenza2 = $DataPartenza;
+                        }
+
+                        /** chiamata funzione per popolare pacchetti e porposte per lingua */
+                        $pacchetti2 = $this->get_pacchettiAI($request->idsito,$id_pacchetto,$Lingua);
+                        if($pacchetti2 != ''){
+                            $NomeProposta2  = $pacchetti2->Pacchetto;
+                            $TestoProposta2 = $pacchetti2->Descrizione;
+                        }else{
+                            $NomeProposta2  = '';
+                            $TestoProposta2 = '';
+                        }
+                        /** Chimamata funzione per popolare le condizione tariffarie per lingua */
+                        $tariffe2 = $this->get_condizioniTariffeAI($request->idsito,$id_tariffe,$Lingua);
+                        if($tariffe2 != ''){
+                            $EtichettaTariffa2 = $tariffe2->tariffa;
+                            $AccontoTesto2     = $tariffe2->testo;
+                        }else{
+                            $EtichettaTariffa2 = '';
+                            $AccontoTesto2     = '';
+                        }            
+                        /** chimata per compilare la percentuale di caparra richiesta */
+                        $caparra2 = $this->get_caparraAI($request->idsito);
+
+                        $insertP2 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                                    Arrivo,
+                                                                    Partenza,
+                                                                    NomeProposta,
+                                                                    TestoProposta,
+                                                                    CheckProposta,
+                                                                    PrezzoL,
+                                                                    PrezzoP,
+                                                                    AccontoPercentuale,
+                                                                    AccontoImporto,
+                                                                    AccontoTariffa,
+                                                                    AccontoTesto
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$DataArrivo2."',
+                                                                    '".$DataPartenza2."',
+                                                                    '".addslashes($NomeProposta2)."',
+                                                                    '".addslashes($TestoProposta2)."',
+                                                                    '0',
+                                                                    '0',
+                                                                    '".$request->PrezzoP2."',
+                                                                    '".$caparra2."',
+                                                                    '0',
+                                                                    '".addslashes($EtichettaTariffa2)."',
+                                                                    '".addslashes($AccontoTesto2)."')";
+                        DB::select($insertP2);
+                        $IdProposta2 = DB::getPdo()->lastInsertId();
+
+                            $n_camere2 = count($request->TipoCamere2);
+                            for($i=0; $i<=($n_camere2-1); $i++){
+                                DB::select("INSERT INTO hospitality_richiesta(id_richiesta,
+                                                                    id_proposta,
+                                                                    TipoSoggiorno,
+                                                                    NumeroCamere,
+                                                                    TipoCamere,
+                                                                    NumAdulti,
+                                                                    NumBambini,
+                                                                    EtaB,
+                                                                    Prezzo
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$IdProposta2."',
+                                                                    '".$request->TipoSoggiorno2[$i]."',
+                                                                    '1',
+                                                                    '".$request->TipoCamere2[$i]."',
+                                                                    '".$request->NumAdulti2[$i]."',
+                                                                    '".$request->NumBambini2[$i]."',
+                                                                    '".$request->EtaB2[$i]."',
+                                                                    '".$request->Prezzo2[$i]."')");
+                        }
+
+                        $array_servizi2 = explode(",", $servizi_aggiuntivi);
+
+                        if($array_servizi2 != '' && $IdProposta2 != '') { 
+                            foreach($array_servizi2 as $key2 => $value2){
+                                DB::select("INSERT INTO hospitality_relazione_visibili_servizi_proposte(idsito,id_richiesta,id_proposta,servizio_id,visibile) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta2."','".$value2."','1')");
+                            }
+                        }
+
+                        ## INSERIMENTO DELLO SCONTO IN TABELLA RELAZIONALE
+                        DB::select("INSERT INTO hospitality_relazione_sconto_proposte(idsito,id_richiesta,id_proposta,sconto) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta2."','".$request->SC2."')");  
+                    
+                    }
+
+
+                    if($request->PrezzoP3!=''){
+
+                        if($request->DataArrivo3 != ''){
+                            $DataArrivo3 = $request->DataArrivo3;
+                        }else{
+                            $DataArrivo3 = $DataArrivo;
+                        }
+                        if($request->DataPartenza3 != ''){
+                            $DataPartenza3 = $request->DataPartenza3;
+                        }else{
+                            $DataPartenza3 = $DataPartenza;
+                        }
+                        /** chiamata funzione per popolare pacchetti e porposte per lingua */
+                        $pacchetti3 = $this->get_pacchettiAI($request->idsito,$id_pacchetto,$Lingua);
+                        if($pacchetti3 != ''){
+                            $NomeProposta3  = $pacchetti3->Pacchetto;
+                            $TestoProposta3 = $pacchetti3->Descrizione;
+                        }else{
+                            $NomeProposta3  = '';
+                            $TestoProposta3 = '';
+                        }
+                        /** Chimamata funzione per popolare le condizione tariffarie per lingua */
+                        $tariffe3 = $this->get_condizioniTariffeAI($request->idsito,$id_tariffe,$Lingua);
+                        if($tariffe3 != ''){
+                            $EtichettaTariffa3 = $tariffe3->tariffa;
+                            $AccontoTesto3     = $tariffe3->testo;
+                        }else{
+                            $EtichettaTariffa3 = '';
+                            $AccontoTesto3     = '';
+                        }            
+                        /** chimata per compilare la percentuale di caparra richiesta */
+                        $caparra3 = $this->get_caparraAI($request->idsito);
+
+                        $insertP3 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                                    Arrivo,
+                                                                    Partenza,
+                                                                    NomeProposta,
+                                                                    TestoProposta,
+                                                                    CheckProposta,
+                                                                    PrezzoL,
+                                                                    PrezzoP,
+                                                                    AccontoPercentuale,
+                                                                    AccontoImporto,
+                                                                    AccontoTariffa,
+                                                                    AccontoTesto
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$DataArrivo3."',
+                                                                    '".$DataPartenza3."',
+                                                                    '".addslashes($NomeProposta3)."',
+                                                                    '".addslashes($TestoProposta3)."',
+                                                                    '0',
+                                                                    '0',
+                                                                    '".$request->PrezzoP3."',
+                                                                    '".$caparra3."',
+                                                                    '0',
+                                                                    '".addslashes($EtichettaTariffa3)."',
+                                                                    '".addslashes($AccontoTesto3)."')";
+
+                        DB::select($insertP3);
+                        $IdProposta3 = DB::getPdo()->lastInsertId();
+
+                            $n_camere3 = count($request->TipoCamere3);
+                            for($i=0; $i<=($n_camere3-1); $i++){
+                                DB::select("INSERT INTO hospitality_richiesta(id_richiesta,
+                                                                    id_proposta,
+                                                                    TipoSoggiorno,
+                                                                    NumeroCamere,
+                                                                    TipoCamere,
+                                                                    NumAdulti,
+                                                                    NumBambini,
+                                                                    EtaB,
+                                                                    Prezzo
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$IdProposta3."',
+                                                                    '".$request->TipoSoggiorno3[$i]."',
+                                                                    '1',
+                                                                    '".$request->TipoCamere3[$i]."',
+                                                                    '".$request->NumAdulti3[$i]."',
+                                                                    '".$request->NumBambini3[$i]."',
+                                                                    '".$request->EtaB3[$i]."',
+                                                                    '".$request->Prezzo3[$i]."')");
+                            }
+
+                            $array_servizi3 = explode(",", $servizi_aggiuntivi);
+
+                            if($array_servizi3 != '' && $IdProposta3 != '') {
+                                foreach($array_servizi3 as $key3 => $value3){
+                                    DB::select("INSERT INTO hospitality_relazione_visibili_servizi_proposte(idsito,id_richiesta,id_proposta,servizio_id,visibile) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta3."','".$value3."','1')");
+                                }
+                            }
+
+                            ## INSERIMENTO DELLO SCONTO IN TABELLA RELAZIONALE
+                            DB::select("INSERT INTO hospitality_relazione_sconto_proposte(idsito,id_richiesta,id_proposta,sconto) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta3."','".$request->SC3."')");  
+                      
+                    }
+
+                    
+                    if($request->PrezzoP4!=''){
+
+                        if($request->DataArrivo4 != ''){
+                            $DataArrivo4 = $request->DataArrivo4;
+                        }else{
+                            $DataArrivo4 = $DataArrivo;
+                        }
+                        if($request->DataPartenza4 != ''){
+                            $DataPartenza4 = $request->DataPartenza4;
+                        }else{
+                            $DataPartenza4 = $DataPartenza;
+                        }
+                        /** chiamata funzione per popolare pacchetti e porposte per lingua */
+                        $pacchetti4 = $this->get_pacchettiAI($request->idsito,$id_pacchetto,$Lingua);
+                        if($pacchetti4 != ''){
+                            $NomeProposta4  = $pacchetti4->Pacchetto;
+                            $TestoProposta4 = $pacchetti4->Descrizione;
+                        }else{
+                            $NomeProposta4  = '';
+                            $TestoProposta4 = '';
+                        }
+                        /** Chimamata funzione per popolare le condizione tariffarie per lingua */
+                        $tariffe4 = $this->get_condizioniTariffeAI($request->idsito,$id_tariffe,$Lingua);
+                        if($tariffe4 != ''){
+                            $EtichettaTariffa4 = $tariffe4->tariffa;
+                            $AccontoTesto4     = $tariffe4->testo;
+                        }else{
+                            $EtichettaTariffa4 = '';
+                            $AccontoTesto4     = '';
+                        }            
+                        /** chimata per compilare la percentuale di caparra richiesta */
+                        $caparra4 = $this->get_caparraAI($request->idsito);
+
+                        $insertP4 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                                Arrivo,
+                                                                Partenza,
+                                                                NomeProposta,
+                                                                TestoProposta,
+                                                                CheckProposta,
+                                                                PrezzoL,
+                                                                PrezzoP,
+                                                                AccontoPercentuale,
+                                                                AccontoImporto,
+                                                                AccontoTariffa,
+                                                                AccontoTesto
+                                                                ) VALUES (
+                                                                '".$request->Id."',
+                                                                '".$DataArrivo4."',
+                                                                '".$DataPartenza4."',
+                                                                '".addslashes($NomeProposta4)."',
+                                                                '".addslashes($TestoProposta4)."',
+                                                                '0',
+                                                                '0',
+                                                                '".$request->PrezzoP4."',
+                                                                '".$caparra4."',
+                                                                '0',
+                                                                '".addslashes($EtichettaTariffa4)."',
+                                                                '".addslashes($AccontoTesto4)."')";
+
+                    DB::select($insertP4);
+                    $IdProposta4 = DB::getPdo()->lastInsertId();
+
+                    $n_camere4 = count($request->TipoCamere4);
+                    for($i=0; $i<=($n_camere4-1); $i++){
+                        DB::select("INSERT INTO hospitality_richiesta(id_richiesta,
+                                                            id_proposta,
+                                                            TipoSoggiorno,
+                                                            NumeroCamere,
+                                                            TipoCamere,
+                                                            NumAdulti,
+                                                            NumBambini,
+                                                            EtaB,
+                                                            Prezzo
+                                                            ) VALUES (
+                                                            '".$request->Id."',
+                                                            '".$IdProposta4."',
+                                                            '".$request->TipoSoggiorno4[$i]."',
+                                                            '1',
+                                                            '".$request->TipoCamere4[$i]."',
+                                                            '".$request->NumAdulti4[$i]."',
+                                                            '".$request->NumBambini4[$i]."',
+                                                            '".$request->EtaB4[$i]."',
+                                                            '".$request->Prezzo4[$i]."')");
+                    }
+
+                    ## INSERIMENTO DELLO SCONTO IN TABELLA RELAZIONALE
+                    DB::select("INSERT INTO hospitality_relazione_sconto_proposte(idsito,id_richiesta,id_proposta,sconto) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta4."','".$request->SC4."')");  
+
+
+                    $array_servizi4 = explode(",", $servizi_aggiuntivi);
+
+                    if($array_servizi4 != '' && $IdProposta4 != '') {
+                        foreach($array_servizi4 as $key4 => $value4){
+                            DB::select("INSERT INTO hospitality_relazione_visibili_servizi_proposte(idsito,id_richiesta,id_proposta,servizio_id,visibile) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta4."','".$value4."','1')");
+                        }
+                    } 
+                }
+
+                    if($request->PrezzoP5!=''){
+
+                        if($request->DataArrivo5 != ''){
+                            $DataArrivo5 = $request->DataArrivo5;
+                        }else{
+                            $DataArrivo5 = $DataArrivo;
+                        }
+                        if($request->DataPartenza5 != ''){
+                            $DataPartenza5 = $request->DataPartenza5;
+                        }else{
+                            $DataPartenza5 = $DataPartenza;
+                        }
+
+                        /** chiamata funzione per popolare pacchetti e porposte per lingua */
+                        $pacchetti5 = $this->get_pacchettiAI($request->idsito,$id_pacchetto,$Lingua);
+                        if($pacchetti5 != ''){
+                            $NomeProposta5  = $pacchetti5->Pacchetto;
+                            $TestoProposta5 = $pacchetti5->Descrizione;
+                        }else{
+                            $NomeProposta5  = '';
+                            $TestoProposta5 = '';
+                        }
+                        /** Chimamata funzione per popolare le condizione tariffarie per lingua */
+                        $tariffe5 = $this->get_condizioniTariffeAI($request->idsito,$id_tariffe,$Lingua);
+                        if($tariffe5 != ''){
+                            $EtichettaTariffa5 = $tariffe5->tariffa;
+                            $AccontoTesto5     = $tariffe5->testo;
+                        }else{
+                            $EtichettaTariffa5 = '';
+                            $AccontoTesto5     = '';
+                        }            
+                        /** chimata per compilare la percentuale di caparra richiesta */
+                        $caparra5 = $this->get_caparraAI($request->idsito);
+
+                        $insertP5 = "INSERT INTO hospitality_proposte(id_richiesta,
+                                                                    Arrivo,
+                                                                    Partenza,
+                                                                    NomeProposta,
+                                                                    TestoProposta,
+                                                                    CheckProposta,
+                                                                    PrezzoL,
+                                                                    PrezzoP,
+                                                                    AccontoPercentuale,
+                                                                    AccontoImporto,
+                                                                    AccontoTariffa,
+                                                                    AccontoTesto
+                                                                    ) VALUES (
+                                                                    '".$request->Id."',
+                                                                    '".$DataArrivo5."',
+                                                                    '".$DataPartenza5."',
+                                                                    '".addslashes($NomeProposta5)."',
+                                                                    '".addslashes($TestoProposta5)."',
+                                                                    '0',
+                                                                    '0',
+                                                                    '".$request->PrezzoP5."',
+                                                                    '".$caparra5."',
+                                                                    '0',
+                                                                    '".addslashes($EtichettaTariffa5)."',
+                                                                    '".addslashes($AccontoTesto5)."')";
+                    DB::select($insertP5);
+                    $IdProposta5 = DB::getPdo()->lastInsertId();
+
+                        $n_camere5 = count($request->TipoCamere5);
+                        for($h=0; $h<=($n_camere5-1); $h++){
+                            DB::select("INSERT INTO hospitality_richiesta(id_richiesta,
+                                                                id_proposta,
+                                                                TipoSoggiorno,
+                                                                NumeroCamere,
+                                                                TipoCamere,
+                                                                NumAdulti,
+                                                                NumBambini,
+                                                                EtaB,
+                                                                Prezzo
+                                                                ) VALUES (
+                                                                '".$request->Id."',
+                                                                '".$IdProposta5."',
+                                                                '".$request->TipoSoggiorno5[$h]."',
+                                                                '1',
+                                                                '".$request->TipoCamere5[$h]."',
+                                                                '".$request->NumAdulti5[$h]."',
+                                                                '".$request->NumBambini5[$h]."',
+                                                                '".$request->EtaB5[$h]."',
+                                                                '".$request->Prezzo5[$h]."')");
+                        }
+
+                    ## INSERIMENTO DELLO SCONTO IN TABELLA RELAZIONALE
+                    DB::select("INSERT INTO hospitality_relazione_sconto_proposte(idsito,id_richiesta,id_proposta,sconto) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta5."','".$request->SC5."')");  
+
+
+                    $array_servizi5 = explode(",", $servizi_aggiuntivi);
+
+                    if($array_servizi5 != '' && $IdProposta5 != '') {
+                        foreach($array_servizi5 as $key5 => $value5){
+                            DB::select("INSERT INTO hospitality_relazione_visibili_servizi_proposte(idsito,id_richiesta,id_proposta,servizio_id,visibile) VALUES('".$request->idsito."','".$request->Id."','".$IdProposta5."','".$value5."','1')");
+                        }
+                    } 
+                }
+
+                ## relazione per inserire info box visibili nel template
+                if(!is_null($request->id_infobox) && !empty($request->id_infobox)) {
+                    DB::select("DELETE FROM hospitality_rel_infobox_preventivo WHERE idsito = ".$request->idsito." AND id_richiesta = ".$request->Id);
+                    foreach($request->id_infobox as $key => $value){
+                        DB::select("INSERT INTO hospitality_rel_infobox_preventivo(idsito,id_richiesta,id_infobox) VALUES('".$request->idsito."','".$request->Id."','".$value."')");
+                    }
+                }
+
+
+                Log::info(date('d-m-Y H:i:s').' -> API compila_preventivo() -> Esito: success; compilato il preventivo {Id} per il QUOTO di {idsito}!',['Id' => $request->Id,'idsito' => $request->idsito]);
+
+            }else{
+
+                Log::info(date('d-m-Y H:i:s').' -> API compila_preventivo() -> Esito: error; la compilazione dei preventivi per il QUOTO di {idsito}, NON è ATTIVO!',['idsito' => $request->idsito]);
+            }
+
+
+    }
 
 
 
