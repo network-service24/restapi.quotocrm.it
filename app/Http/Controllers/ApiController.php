@@ -1090,7 +1090,7 @@ class ApiController extends Controller
             }
 
 
-            Log::info(date('d-m-Y H:i:s').' -> API compila_preventivo() -> Esito: success; compilato il preventivo {Id} per il QUOTO di {idsito}!',['Id' => $request->Id,'idsito' => $request->idsito]);
+            Log::info(date('d-m-Y H:i:s').' -> API compila_preventivo_libero() -> Esito: success; compilato il preventivo {Id} per il QUOTO di {idsito}!',['Id' => $request->Id,'idsito' => $request->idsito]);
 
     }
 
