@@ -91,18 +91,21 @@ class SendPreventiviCron extends Command
      */
     public function handle()
     {
-             // query per i dati della richiesta
-        $sel = "SELECT hospitality_guest.*, hospitality_giorni_recall_preventivi.numero_giorni 
+        $txt = '';
+        // query per i dati della richiesta
+        $sel = "SELECT hospitality_guest.*
                 FROM hospitality_guest 
                 WHERE hospitality_guest.TipoRichiesta = 'Preventivo' 
-                AND hospitality_guest.Inviata = 0 
+                AND hospitality_guest.Inviata IS NULL 
                 AND hospitality_guest.Chiuso = 0
                 AND hospitality_guest.Archivia = 0 
                 AND hospitality_guest.Disdetta = 0
                 AND hospitality_guest.NoDisponibilita = 0
                 AND hospitality_guest.Visibile = 1 
                 AND hospitality_guest.Accettato = 0
-                AND hospitality_guest.InvioAutomatico = 1";
+                AND hospitality_guest.InvioAutomatico = 1
+                AND hospitality_guest.Id = 1657811
+                AND hospitality_guest.idsito = 1740";
         $qy  = DB::select($sel);
         $tot = sizeof($qy);
         if($tot > 0){
@@ -144,7 +147,6 @@ class SendPreventiviCron extends Command
                         // assegno alcune variabili
                         $IdRichiesta        = $dati->Id;
                         $IdSito             = $dati->idsito;
-                        $TemplateEmail      = $dati->TemplateEmail;
                         $AbilitaInvio       = $dati->AbilitaInvio;
                         $TipoRichiesta      = $dati->TipoRichiesta;
                         $Nome               = stripslashes($dati->Nome);
@@ -175,6 +177,22 @@ class SendPreventiviCron extends Command
                             }
                         }
 
+                        $_soluzioneconf     =     SOLUZIONECONFERMATA;         
+                        $_datisoggiorno     =     DATISOGGIORNO;
+                        $_tiposoggiorno     =     TIPOSOGGIORNO;
+                        $_dataarrivo        =     DATAARRIVO;
+                        $_datapartenza      =     DATAPARTENZA;
+                        $_sistemazione      =     SISTEMAZIONE;
+                        $_note              =     NOTE;                              
+                        $_txtlink1          =     TXTLINK1;
+                        $_txtlink2          =     TXTLINK2;
+                        $_paginariservata   =     PAGINARISERVATA;
+                        $_saluti            =     SALUTI_H;
+                        $_offerta_dettaglio =     OFFERTA_DETTAGLIO;
+                        $_pagamento         =     PAGAMENTO;
+                        $_acconto           =     ACCONTO;
+                        $_tiporichiesta     =     ($TipoRichiesta=='Preventivo'?PREVENTIVO:CONFERMA); 
+
                         $selQ = "SELECT * FROM hospitality_contenuti_email WHERE TipoRichiesta = :TipoRichiesta AND Lingua = :Lingua AND idsito = :idsito";
                         $resQ = DB::select($selQ,['TipoRichiesta' => $TipoRichiesta, 'Lingua' => $Lingua, 'idsito' => $IdSito]);
                         $rw   = $resQ[0];     
@@ -196,18 +214,9 @@ class SendPreventiviCron extends Command
                                 WHERE siti.idsito = :idsito';
                         $resu      = DB::select($sit,['idsito' => $IdSito]);
                         $rows      = $resu[0];
-                        $logo      = $rows->logo;
-                        $nomeHotel = $rows->nome;
-                        $emailHotel= $rows->email;
                         $sito_tmp  = str_replace("https://","",$rows->web);
                         $sito_tmp  = str_replace("www.","",$sito_tmp);
                         $SitoWeb   = 'https://www.'.$sito_tmp;
-                        $tel       = $rows->tel;
-                        $fax       = $rows->fax;
-                        $cap       = $rows->cap;
-                        $indirizzo = $rows->indirizzo;
-                        $comune    = $rows->comune;
-                        $prov      = $rows->prov;
                         $directory_sito = str_replace(".it","",$sito_tmp);
                         $directory_sito = str_replace(".com","",$directory_sito);
                         $directory_sito = str_replace(".net","",$directory_sito);
@@ -216,6 +225,15 @@ class SendPreventiviCron extends Command
                         $directory_sito = str_replace(".de","",$directory_sito);
                         $directory_sito = str_replace(".es","",$directory_sito);
                         $directory_sito = str_replace(".fr","",$directory_sito);
+                        $logo      = $rows->logo;    
+                        $NomeHotel = $rows->nome;
+                        $EmailHotel= $rows->email;          
+                        $tel       = $rows->tel;
+                        $fax       = $rows->fax;
+                        $cap       = $rows->cap;
+                        $indirizzo = $rows->indirizzo;
+                        $comune    = $rows->comune;
+                        $prov      = $rows->prov;
 
                         $grafica = $this->check_template($IdSito);
                         $chek_l_t = $this->check_landing_template($IdSito,$IdRichiesta);
@@ -231,17 +249,17 @@ class SendPreventiviCron extends Command
                         if($chek_l_t!=''){
                             
                             if($chek_l_t=='default'){
-                                $link = ($UrlLanding.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');                     
+                                $link = (env('URL_LANDING').$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');                     
                             }else{
-                                $link = ($UrlLanding.$chek_l_t.'/'.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');
+                                $link = (env('URL_LANDING').$chek_l_t.'/'.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');
                             }                
             
                         }else{
 
                             if($grafica=='default'){
-                                $link = ($UrlLanding.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');                 
+                                $link = (env('URL_LANDING').$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');                 
                             }else{
-                                $link = ($UrlLanding.$grafica.'/'.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');
+                                $link = (env('URL_LANDING').$grafica.'/'.$directory_sito.'/'.base64_encode($IdRichiesta.'_'.$IdSito.'_p').'/count/');
                             }                
 
                         }
@@ -258,11 +276,11 @@ class SendPreventiviCron extends Command
                         $mail->SMTPSecure = env('MAIL_ENCRYPTION');
                         $mail->Port = env('MAIL_PORT');               
 
-                        $mail->setFrom(env('MAIL_FROM_ADDRESS'), env('APP_NAME'));
-                        
+                        $mail->setFrom(env('MAIL_FROM_ADDRESS'),env('APP_NAME'));
+
                         $mail->addAddress($Email, $Nome.' '.$Cognome);
                         $mail->isHTML(true);
-                        $mail->Subject = str_replace("[cliente]",$Nome.' '.$Cognome,$_oggetto);
+                        $mail->Subject = str_replace("[cliente]",$Nome.' '.$Cognome, $rw->Oggetto).' - '.$NomeHotel;
 
                         include_once public_path('email_template/preventivo_mail.php');
                
@@ -273,13 +291,13 @@ class SendPreventiviCron extends Command
 
                         if($mail->send()){
                             $txt = date('d-m-Y H:i:s').' - Inviata: '.' ID '.$IdRichiesta.' NR. '.$NumeroPrenotazione.' IDSITO '.$IdSito.' '. $SitoWeb."\r\n";
+                            
+                            DB::table('hospitality_guest')->where('Id','=',$IdRichiesta)->update(['Inviata' => 1,'DataInvio' => date('Y-m-d'),'MetodoInvio' => 'E-mail AI']);
+
+                            echo 'Inviata: '.' ID '.$IdRichiesta.' NR. '.$NumeroPrenotazione.' IDSITO '.$IdSito."\r\n";
                         }else{
                             $txt = date('d-m-Y H:i:s').' - Errore invio Email per  ID '.$IdRichiesta.' NR. '.$NumeroPrenotazione.' IDSITO '.$IdSito.' '. $SitoWeb.': ' . $mail->ErrorInfo."\r\n";			    
                         }
-
-                        DB::table('hospitality_guest')->where('Id','=',$IdRichiesta)->update(['Inviata' => 1,'DataInvio' => date('Y-m-d'),'MetodoInvio' => 'E-mail']);
-
-                        echo 'Inviata: '.' ID '.$IdRichiesta.' NR. '.$NumeroPrenotazione.' IDSITO '.$IdSito."\r\n";
               
             } // end while  
          

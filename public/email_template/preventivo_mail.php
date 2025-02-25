@@ -2,7 +2,7 @@
         $query_stile = "SELECT hospitality_stile_landing.*,hospitality_template_landing.BackgroundCellLink FROM hospitality_stile_landing
                         INNER JOIN hospitality_template_landing ON hospitality_template_landing.idsito = hospitality_stile_landing.idsito
                         WHERE hospitality_stile_landing.idsito = :idsito";
-        $res_stile   = DB::select($query_stile,['idsito' => $idsito]);
+        $res_stile   = DB::select($query_stile,['idsito' => $IdSito]);
         if(sizeof($res_stile)>0){
             $rec_stile   = $res_stile[0];
             $BackgroundEmail    = $rec_stile->BackgroundEmail;
@@ -664,7 +664,7 @@
                                     </table>';
                   // query per le tre foto
                   $sel_img = "SELECT * FROM hospitality_minigallery WHERE idsito = :idsito ORDER BY Id DESC LIMIT 3";
-                  $res_img = DB::select($sel_img,['idsito' => $idsito]);
+                  $res_img = DB::select($sel_img,['idsito' => $IdSito]);
                   if(sizeof($res_img)>0){
                       $messaggio .='
                                     <table cellpadding="0" cellspacing="0" align="center" width="100%" border="0" style="border-spacing: 0;border-collapse: collapse;vertical-align: top">
@@ -704,7 +704,7 @@
                                                                                           <tbody>
                                                                                             <tr style="vertical-align: top">
                                                                                               <td align="center" style="word-break: break-word;border-collapse: collapse !important;vertical-align: top;width: 100%;padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px">
-                                                                                                <div align="center" style="font-size:12px"> <img class="center fullwidth" align="center" border="0" src="'.url('/uploads/'.$idsito.'/'.$value->Immagine.'').'" alt="Image" title="Image" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block;border: 0;height: auto;line-height: 100%;margin: 0 auto;float: none;width: 100% !important;max-width: 216px" width="216" data-bee="true"> </div>
+                                                                                                <div align="center" style="font-size:12px"> <img class="center fullwidth" align="center" border="0" src="'.url('/uploads/'.$IdSito.'/'.$value->Immagine.'').'" alt="Image" title="Image" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block;border: 0;height: auto;line-height: 100%;margin: 0 auto;float: none;width: 100% !important;max-width: 216px" width="216" data-bee="true"> </div>
                                                                                               </td>
                                                                                             </tr>
                                                                                           </tbody>

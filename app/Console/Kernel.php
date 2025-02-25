@@ -9,7 +9,8 @@ class Kernel extends ConsoleKernel
 {
 
     protected $commands = [
-        Commands\SendPreventiviaQuoto::class,
+        Commands\SendPreventiviCron::class,
+        //Commands\SendTestCron::class
 
    ];
     /**
@@ -17,7 +18,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        //$schedule->command('app:send-preventivi')->hourly();
+        //$schedule->command('app:send-preventivi')everyTenMinutes();
+        ### TEST ##
+        $schedule->command('app:send-preventivi')->emailOutputTo(env('MAIL_MARCELLO'));
+        //$schedule->command('sendtestcron:cron')->emailOutputTo(env('MAIL_MARCELLO'));
     }
 
     /**
