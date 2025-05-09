@@ -698,7 +698,7 @@ class ApiController extends Controller
                                                 Lingua                 = '".$Lingua."',
                                                 DataScadenza           = '".$request->DataScadenza."',
                                                 AbilitaInvio           = 1,
-                                                InvioAutomatico        = 1
+                                                CompilatoInAutomatico  = 1
                                                 WHERE Id               = ".$request->Id;
             DB::select($update);
                 
@@ -1308,7 +1308,7 @@ class ApiController extends Controller
                                                                                         'Lingua'                 => $Lingua,
                                                                                         'DataScadenza'           => $DataScadenza,
                                                                                         'AbilitaInvio'           => 1,
-                                                                                        'InvioAutomatico'        => 1
+                                                                                        'CompilatoInAutomatico'  => 1
                                                                                     ]);
 
                     
