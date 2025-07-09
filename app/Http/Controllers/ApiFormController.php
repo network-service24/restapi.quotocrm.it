@@ -578,7 +578,7 @@ class ApiFormController extends Controller
                                 </table>';
         
                         $msg .= '
-                                            <img src="'.$BaseUrl.'uploads/loghi_siti/' . $logo . '" alt="Logo Struttura">
+                                            <img src="'.$BaseUrl.'uploads/loghi/' . $logo . '" alt="Logo Struttura">
                                             <h1  class="title">' . $responseform['h1'][$language] . '</h1>
                                                 <table cellpadding="0" cellspacing="0" width="100%"  border="0" align="center">
                                                 <tr>
@@ -824,7 +824,7 @@ class ApiFormController extends Controller
                                     </table>';
         
                         $msg_hotel .= '
-                                            <img src="'.$BaseUrl.'uploads/loghi_siti/' . $logo . '">
+                                            <img src="'.$BaseUrl.'uploads/loghi/' . $logo . '">
                                             <h1  class="title">' . $responseform['h1'][$language] . '</h1>
                                                 <table cellpadding="0" cellspacing="0" width="100%"  border="0" align="center">
                                                 <tr>
