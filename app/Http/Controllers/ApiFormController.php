@@ -151,11 +151,15 @@ class ApiFormController extends Controller
     {
             $select2    = "SELECT NumeroPrenotazione FROM hospitality_guest WHERE idsito = :idsito ORDER BY NumeroPrenotazione DESC";
             $res2       = DB::select($select2,['idsito' => $idsito]);
-            if(sizeof($res2)>0){
-                $rws                 = $res2[0];
+            if(sizeof($res2) > 0){
+                $rws  = $res2[0];
                 $numero_prenotazione =  (intval($rws->NumeroPrenotazione)+1);
-                return $numero_prenotazione;
+            }else{
+                $numero_prenotazione =  1;
             }
+               
+            return $numero_prenotazione;
+            
     }
     
     /**
