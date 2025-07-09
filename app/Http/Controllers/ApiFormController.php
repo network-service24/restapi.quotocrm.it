@@ -302,10 +302,9 @@ class ApiFormController extends Controller
         
                 $sql = "SELECT siti.*,anagrafica.rag_soc
                     FROM siti
-                    INNER JOIN utenti ON utenti.idsito = siti.idsito
-                    INNER JOIN anagrafica ON anagrafica.idanagra = utenti.idanagra
+                    INNER JOIN rel_anagra_siti ON rel_anagra_siti.idsito = siti.idsito
+                    INNER JOIN anagrafica ON anagrafica.idanagra = rel_anagra_siti.idanagra
                     WHERE siti.idsito = " . $idsito . "
-                    AND utenti.blocco_accesso = 0
                     AND siti.hospitality = 1
                     AND siti.data_start_hospitality <= '" . date('Y-m-d') . "'
                     AND siti.data_end_hospitality > '" . date('Y-m-d') . "'";
@@ -391,20 +390,19 @@ class ApiFormController extends Controller
                         $s = "SELECT siti.*,
                                     anagrafica.rag_soc,
                                     anagrafica.p_iva,
-                                    utenti.logo,
-                                    utenti.idutente,
+                                    users.logo,
                                     comuni.nome_comune,
                                     province.nome_provincia,
                                     province.sigla_provincia,
                                     stati.nome_stato
                         FROM siti
-                        INNER JOIN utenti ON utenti.idsito = siti.idsito
-                        INNER JOIN anagrafica ON anagrafica.idanagra = utenti.idanagra
+                        INNER JOIN users ON users.idsito = siti.idsito
+                        INNER JOIN rel_anagra_siti ON rel_anagra_siti.idsito = siti.idsito
+                        INNER JOIN anagrafica ON anagrafica.idanagra = rel_anagra_siti.idanagra
                         INNER JOIN comuni ON comuni.codice_comune = siti.codice_comune
                         INNER JOIN province ON province.codice_provincia = siti.codice_provincia
                         INNER JOIN stati ON stati.id_stato = siti.id_stato
-                        WHERE siti.idsito = " . $idsito . "
-                        AND utenti.blocco_accesso = 0
+                        WHERE siti.idsito = " . $idsito . "                       
                         AND siti.hospitality = 1
                         AND siti.data_start_hospitality <= '" . date('Y-m-d') . "'
                         AND siti.data_end_hospitality > '" . date('Y-m-d') . "'";
@@ -428,7 +426,6 @@ class ApiFormController extends Controller
                         $idsito                   = $r->idsito;
                         $chiave_sito_recaptcha    = $ret->chiave_sito_recaptcha_invisible;
                         $chiave_segreta_recaptcha = $ret->chiave_segreta_recaptcha_invisible;
-                        $idutente                 = $r->idutente;
                         $logo                     = $r->logo;
         
                         $nome                     = ucfirst($request->nome);
@@ -1280,7 +1277,7 @@ class ApiFormController extends Controller
                     $responseContent = '<div>
                             Il modulo di richiesta by Quoto! CRM non è più attivo!
                             <br>
-                            Per mandare il tuo messaggio alla struttura, scrivi direttamente a '.$rec['email'].'
+                            Per mandare il tuo messaggio alla struttura, scrivi direttamente a '.$rec->email.'
                             <br>
                             Se sei il proprietario del sito, contatta Network Service
                             <br>
@@ -1300,122 +1297,7 @@ class ApiFormController extends Controller
             return response($responseContent)->header('Content-Type', 'text/html;charset=utf-8');
         }
 
- /*      
-         public function send_form(Request $request)
-        {
-            $data = [
 
-                                'oggetto_email'   => 'Richiesta per https://test.suiteweb.it',
-                                'idsito'          => 1740,
-                                'id_lingua'       => 1,
-                                'language'        => 'it',
-                                'lang_dizionario' => 'it',
-                                'id_lang'         => 1,
-                                'captcha'         => 0,
-                                'HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0, Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
-                                'REMOTE_ADDR'     => '5.89.51.153',
-                                'adulti'          => 2,
-                                'bambini'         => 0,
-                                'utm_source'      => '',
-                                'utm_medium'      => '',
-                                'utm_campaign'    => '',
-                                'HTTP_REFERRER'   => '/',
-                                '_ga'             => 'GA1.1.1680011225.1738573267',
-                                'CLIENT_ID'       => '1680011225.1738573267',
-                                'action'          => 'send',
-                                'urlback'         => 'https://test.suiteweb.it',
-                                'hotel'           => '/script_php/utm/form_utm.php',
-                                'nome'            => 'Marcello',
-                                'cognome'         => 'Visigalli',
-                                'email'           => 'marcello@network-service.it',
-                                'telefono'        => '3333333333',
-                                'data_arrivo'     => '2025-06-20',
-                                'data_partenza'   => '2025-06-26',
-                                'TipoSoggiorno_1' => 'Pensione Completa',
-                                'NumAdulti_1'     => 2,
-                                'NumBambini_1'    => 0,
-                                'messaggio'       => 'Test di prova',
-                                'marketing'       => 'on',
-                                'consenso'        => 'on'
-                    
-                    ];
-                    
-                    
-                    
-                    $apiKey = 'QTbpNZiwhbJlcIVQjwgyUnaUqFp21Y2x2aN3o5EXQljjdflf/!aKU8EPgFxvS!hacpOoUCL9kv/lVDJVtRI=';
-                    
-                    $ch = curl_init();
-                    curl_setopt($ch, CURLOPT_URL, 'http://restapi.quotocrm.it.dvl.to/api/insert_preventivo');
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-
-                    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                    "X-API-KEY: $apiKey",
-                    "Content-Type: application/json"]); 
-                    
-                    $response = curl_exec($ch);
-                    
-                    if (curl_errno($ch)) {
-                        echo "Errore cURL: " . curl_error($ch);
-                    } else {
-                        echo "Risposta dal server: " . $response;
-                    }
-                        //print_r($response);
-                    
-                    curl_close($ch);
-                    Log::info($response);
-        } 
-*/
-  /*   
-        public function send_form(Request $request)
-        {
-    
-    
-            $response = Http::asForm()->post(
-                'http://restapi.quotocrm.it.dvl.to/api/insert_preventivo', [
-                    'oggetto_email'   => 'Richiesta per https://test.suiteweb.it',
-                    'idsito'          => 1740,
-                    'id_lingua'       => 1,
-                    'language'        => 'it',
-                    'lang_dizionario' => 'it',
-                    'id_lang'         => 1,
-                    'captcha'         => 0,
-                    'HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0, Win64, x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
-                    'REMOTE_ADDR'     => '5.89.51.153',
-                    'adulti'          => 2,
-                    'bambini'         => 0,
-                    'utm_source'      => '',
-                    'utm_medium'      => '',
-                    'utm_campaign'    => '',
-                    'HTTP_REFERRER'   => '/',
-                    '_ga'             => 'GA1.1.1680011225.1738573267',
-                    'CLIENT_ID'       => '1680011225.1738573267',
-                    'action'          => 'send',
-                    'urlback'         => 'https://test.suiteweb.it',
-                    'hotel'           => '/script_php/utm/form_utm.php',
-                    'nome'            => 'Marcello',
-                    'cognome'         => 'Visigalli',
-                    'email'           => 'marcello@network-service.it',
-                    'telefono'        => '3333333333',
-                    'data_arrivo'     => '2025-06-20',
-                    'data_partenza'   => '2025-06-26',
-                    'TipoSoggiorno_1' => 'Pensione Completa',
-                    'NumAdulti_1'     => 2,
-                    'NumBambini_1'    => 0,
-                    'messaggio'       => 'Test di prova',
-                    'marketing'       => 'on',
-                    'consenso'        => 'on'
-                ]
-            );
-            
-
-            $jsonContent = $response->body();
-
-            Log::info($jsonContent);
-
-            return response($jsonContent)->header('Content-Type', 'text/html;charset=utf-8');
-        }
-*/
 
     
 }
